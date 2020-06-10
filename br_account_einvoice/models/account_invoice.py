@@ -226,6 +226,14 @@ class AccountInvoice(models.Model):
         total_produtos = total_servicos = 0.0
         eletronic_items = []
         for inv_line in inv_lines:
+            #
+            # Donation override
+            #
+            if inv_line.tax_receipt_ok:
+                continue
+            #
+            # Donation override
+            #
             if inv_line.product_type == 'service':
                 total_servicos += inv_line.valor_bruto
             else:
