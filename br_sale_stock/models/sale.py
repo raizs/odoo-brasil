@@ -43,10 +43,8 @@ class SaleOrder(models.Model):
         balance_despesas = self.total_despesas
         total_items = len(self.order_line)
 
-        for l in self.order_line:
+        for l in self.order_line.filtered(lambda x: x.fiscal_type == 'product'):
             index += 1
-            if l.product_id.fiscal_type == 'service':
-                continue
             item_liquido = l.valor_bruto - l.valor_desconto
             percentual = self._calc_ratio(item_liquido, amount)
             if index == total_items:
