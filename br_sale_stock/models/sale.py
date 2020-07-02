@@ -32,23 +32,24 @@ class SaleOrder(models.Model):
     @api.onchange('total_despesas', 'total_seguro', 'total_frete')
     def _onchange_despesas_frete_seguro(self):
         amount = 0
-        for line in self.order_line:
-            if line.product_id.fiscal_type == 'product':
-                amount += line.valor_bruto - line.valor_desconto
+        itens = self.order_line.filtered(
+            lambda x: x.product_id.fiscal_type == 'product')
+
+        for line in itens:
+            amount += line.valor_bruto - line.valor_desconto
 
         index = 0
         prec = self.currency_id.decimal_places
         balance_seguro = self.total_seguro
         balance_frete = self.total_frete
         balance_despesas = self.total_despesas
-        total_items = len(self.order_line)
 
         for l in self.order_line.filtered(
                 lambda x: x.product_id.fiscal_type == 'product'):
             index += 1
             item_liquido = l.valor_bruto - l.valor_desconto
             percentual = self._calc_ratio(item_liquido, amount)
-            if index == total_items:
+            if index == len(itens):
                 amount_seguro = balance_seguro
                 amount_frete = balance_frete
                 amount_despesas = balance_despesas
@@ -56,11 +57,12 @@ class SaleOrder(models.Model):
                 amount_seguro = round(self.total_seguro * percentual, prec)
                 amount_frete = round(self.total_frete * percentual, prec)
                 amount_despesas = round(self.total_despesas * percentual, prec)
-            l.update({
+            vals = {
                 'valor_seguro': amount_seguro,
                 'valor_frete': amount_frete,
                 'outras_despesas': amount_despesas
-            })
+            }
+            l.update(vals)
             balance_seguro -= amount_seguro
             balance_frete -= amount_frete
             balance_despesas -= amount_despesas
