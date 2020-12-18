@@ -155,7 +155,7 @@ class AccountTax(models.Model):
         else:
             vals['amount'] = icms_tax._compute_amount(base_icms, 1.0)
             vals['base'] = base_icms
-        if self.env.context.get("icms_cst") in ('60','40'):
+        if self.env.context.get("icms_cst") in ('60','40','41'):
             vals['base'] = 0
             vals['amount'] = 0
         return [vals]
